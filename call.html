@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rich Rich Richer Game</title>
+  <style>
+    /* General Body Styling */
+    body {
+      font-family: 'Comic Sans MS', sans-serif;
+      text-align: center;
+      background: linear-gradient(to bottom, #d4af37, #f3e5ab);
+      color: #000;
+      margin: 0;
+      padding: 0;
+      transition: background 0.5s ease;
+    }
+    /* Watermark Styling */
+    #watermark {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 3em;
+      color: #ffd700; /* Gold color */
+      animation: fade-in-out 5s forwards;
+      z-index: 10; /* Ensure it appears above other elements */
+    }
+    @keyframes fade-in-out {
+      0% { opacity: 0; }
+      20% { opacity: 1; }
+      80% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+    /* Game Container Styling */
+    .screen {
+      display: none;
+      max-width: 400px;
+      margin: 50px auto;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.7);
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+      animation: fade-in 1s ease-in-out;
+    }
+    /* Animated Title */
+    .animated-title {
+      font-size: 2em;
+      animation: flicker 2s infinite alternate;
+      color: #ffcc00; /* Gold color */
+    }
+    /* Score Theme */
+    .score-theme {
+      animation: pulse 1.5s infinite;
+      color: #ffffff; /* White */
+    }
+    /* Clicker Button Animation */
+    #clicker-button {
+      font-size: 60px;
+      padding: 1px;
+      margin: 1px;
+      background: #f9fc3a;
+      color: #f9fc3a;
+      border: none;
+      border-radius: 100px;
+      cursor: pointer;
+      animation: rotate 5s infinite;
+      position: relative; /* For scattering animation */
+    }
+    #clicker-button:hover {
+      background: #d8be15;
+    }
+    /* Advertisement Area */
+    #advertisement {
+      margin: 20px 0;
+      padding: 10px;
+      background: #f8d49f;
+      border-radius: 10px;
+      font-weight: bold;
+      font-size: 18px;
+      color: #d95f00; /* Dark orange */
+    }
+    /* Shop Theme */
+    .shop-theme {
+      width: auto;
+      height: auto;
+      margin-top: 20px;
+      border: 2px solid #fff;
+      border-radius: 10px;
+      padding: 10px;
+      display: none; /* Hidden by default */
+    }
+    #il {
+      overflow-x: auto;
+      white-space: nowrap; /* Prevent line breaks */
+      max-width: 100%; /* Limit the width */
+    }
+    .upgrade-theme {
+      width: 110px;
+      font-size: 16px;
+      padding: 10px 20px;
+      margin: 10px;
+      background: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      animation: glow 2s infinite;
+    }
+    /* Button Theme */
+    .upgrade, .luxury-theme {
+      font-size: 16px;
+      padding: 10px 20px;
+      margin: 10px;
+      background: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      animation: glow 2s infinite;
+    }
+    .upgrade-theme:hover, .luxury-theme:hover {
+      background: #0056b3;
+    }
+    /* Level Progress Bar */
+    #progress-container {
+      width: 100%;
+      background: #ccc;
+      border-radius: 10px;
+      height: 20px;
+      margin-top: 10px;
+    }
+    #progress {
+      height: 100%;
+      background: #ffd700;
+      width: 0%;
+      border-radius: 10px;
+    }
+    /* Restart Menu */
+    #restart-menu {
+      display: none;
+      text-align: center;
+      margin-top: 20px;
+    }
+    /* Inventory */
+    #inventory {
+      margin-top: 20px;
+      text-align: left;
+      color: #ffffff;
+    }
+    /* Animations */
+    @keyframes fade-in {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes flicker {
+      0%, 100% { opacity: 0.9; }
+      50% { opacity: 0.6; }
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    @keyframes glow {
+      0%, 100% { box-shadow: 0 0 10px #ffd700, 0 0 20px #ffd700; }
+      50% { box-shadow: 0 0 30px #ffd700, 0 0 40px #ffd700; }
+    }
+    @keyframes rotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    @keyframes scatter {
+      0% { transform: translate(0, 0); opacity: 1; }
+      100% { transform: translate(var(--x), var(--y)); opacity: 0; }
+    }
+    /* Scattering Coins */
+    .coin {
+      position: absolute;
+      font-size: 24px;
+      animation: scatter 0.5s forwards;
+    }
+  </style>
+</head>
+<body>
+  <div id="watermark">Beautiful Games</div>
+
+  <div id="start-screen" class="screen">
+    <h1 class="animated-title">💰 Rich Rich Richer 💰</h1>
+    <div id="advertisement">This game is just a prototype, and we are working hard to update it soon!</div>
+    <button id="start-button" class="upgrade">Start Accumulating Wealth</button>
+    <button id="shop-button" class="upgrade">Open Shop</button>
+    <div id="sound-controls">
+    <button id="toggle-sound" class="upgrade-theme">Mute Sound</button>
+  </div>
+    <p>Total Money: <span id="total-money">0</span> 💵</p>
+    <p>Highest Level Reached: <span id="highest-level">1</span></p>
+    
+  </div>
+
+  <div id="shop" class="shop-theme">
+    <h2>Luxury Purchases</h2>
+    <p>Total Money: <span id="shop-total-money">0</span> 💵</p>
+    <div id="il">
+      <p>
+        <button id="luxury-item1" class="luxury-theme" disabled>Luxury Car - 500 Coins</button>
+        <button id="luxury-item2" class="luxury-theme" disabled>Yacht - 700 Coins</button>
+        <button id="luxury-item3" class="luxury-theme" disabled>Mansion - 1000 Coins</button>
+        <button id="luxury-item4" class="luxury-theme" disabled>Private Jet - 1500 Coins</button>
+        <button id="luxury-item5" class="luxury-theme" disabled>Gold Watch - 200 Coins</button>
+      </p>
+      <p>
+        <button id="luxury-item6" class="luxury-theme" disabled>Luxury Vacation - 300 Coins</button>
+        <button id="luxury-item7" class="luxury-theme" disabled>Sports Car - 800 Coins</button>
+        <button id="luxury-item8" class="luxury-theme" disabled>Designer Handbag - 250 Coins</button>
+        <button id="luxury-item9" class="luxury-theme" disabled>Luxury Yacht - 5000 Coins</button>
+        <button id="luxury-item10" class="luxury-theme" disabled>Private Island - 10000 Coins</button>
+      </p>
+    </div>
+    <button id="close-shop" class="upgrade-theme">Close Shop</button>
+  </div>
+
+  <div id="game-screen" class="screen">
+  
+  <div id="score-container" class="score-theme">
+    <h4 align="left">Wealth: <span id="score">0</span> 💵 --- 
+    Time Left: <span id="timer">30</span>s  --- 
+    Level: <span id="level">1</span></h4>
+  </div>
+  <div id="progress-container">
+    <div id="progress"></div>
+  </div>
+  <button id="clicker-button" class="clicker-theme"><font size="24">🪙</font></button>
+  <h2>Investment Options</h2>
+  <button id="upgrade" class="upgrade-theme" disabled>Double clicks - 50 🪙</button>
+  <button id="time-boost" class="upgrade-theme" disabled>Extend Time - 100 🪙</button>
+  <button id="auto-investor" class="upgrade-theme" disabled>Auto-Investor - 200 🪙</button>
+  <div id="inventory">
+    <h3>Inventory:</h3>
+    <ul id="inventory-list"></ul>
+  </div>
+</div>
+
+  <div id="restart-menu" class="screen">
+    <h2>Game Over! Your final wealth is <span id="final-score">0</span> 💵</h2>
+    <div id="advertisement">Please help us by giving your feedback here...<a href="https://forms.gle/Gh2Y5QevQuZDm7tv9" target="_blank"><i>Beautiful Games</i></a></div>
+    <button id="restart-button" class="upgrade">Restart Your Wealth Journey</button>
+  </div>
+
+  <audio id="background-sound" src="C:\Users\Prakash Parimal\Documents\AA files\wp\pro 27\11L-Retro_video_game_fun-1737277814309.mp3" loop></audio>
+  <audio id="click-sound" src="C:\Users\Prakash Parimal\Documents\AA files\wp\pro 27\games coin clicker sound.mp3"></audio>
+  <audio id="power-up-sound" src="C:\Users\Prakash Parimal\Documents\AA files\wp\pro 27\power up sound.mp3"></audio>
+<script>
+// Game Variables
+let score = 0;
+let timer = 30;
+let clickPower = 1;
+let autoInvestorActive = false;
+let level = 1;
+let totalMoney = localStorage.getItem('totalMoney') ? parseInt(localStorage.getItem('totalMoney')) : 0;
+let highestLevel = localStorage.getItem('highestLevel') ? parseInt(localStorage.getItem('highestLevel')) : 1;
+let gameInterval; // Timer interval
+let autoInvestorInterval; // Auto-investor interval
+let soundMuted = false; // State to track if sound is muted
+
+// DOM Elements
+const scoreElement = document.getElementById('score');
+const timerElement = document.getElementById('timer');
+const levelElement = document.getElementById('level');
+const clickerButton = document.getElementById('clicker-button');
+const upgradeButton = document.getElementById('upgrade');
+const timeBoostButton = document.getElementById('time-boost');
+const autoInvestorButton = document.getElementById('auto-investor');
+const finalScoreElement = document.getElementById('final-score');
+const restartMenu = document.getElementById('restart-menu');
+const progressBar = document.getElementById('progress');
+const startScreen = document.getElementById('start-screen');
+const gameScreen = document.getElementById('game-screen');
+const totalMoneyElement = document.getElementById('total-money');
+const highestLevelElement = document.getElementById('highest-level');
+const inventoryList = document.getElementById('inventory-list');
+const backgroundSound = document.getElementById('background-sound');
+const clickSound = document.getElementById('click-sound');
+const powerUpSound = document.getElementById('power-up-sound');
+
+
+// Disable text selection and Enter key
+document.addEventListener('selectstart', (event) => event.preventDefault());
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Enter') {
+    event.preventDefault();
+  }
+});
+
+// Show watermark and then start screen
+window.onload = () => {
+  document.getElementById('watermark').style.display = 'block'; // Show watermark
+  setTimeout(() => {
+    document.getElementById('watermark').style.display = 'none'; // Hide watermark
+    startScreen.style.display = 'block'; // Show start screen
+    totalMoneyElement.textContent = totalMoney; // Display total money
+    highestLevelElement.textContent = highestLevel; // Display highest level
+    backgroundSound.play(); // Start background sound
+  }, 5000); // 5 seconds duration
+};
+
+// Start the game
+document.getElementById('start-button').addEventListener('click', () => {
+  startScreen.style.display = 'none';
+  gameScreen.style.display = 'block';
+  startGame();
+  backgroundSound.play(); // Start background sound
+});
+
+// Open shop
+document.getElementById('shop-button').addEventListener('click', () => {
+  hideGameElements();
+  document.getElementById('shop').style.display = 'block';
+});
+
+// Close shop
+document.getElementById('close-shop').addEventListener('click', () => {
+  document.getElementById('shop').style.display = 'none';
+  showGameElements();
+});
+
+// Function to hide game elements
+function hideGameElements() {
+  gameScreen.style.display = 'none';
+  startScreen.style.display = 'none';
+  restartMenu.style.display = 'none';
+}
+
+// Function to show game elements
+function showGameElements() {
+  gameScreen.style.display = 'block';
+  startScreen.style.display = 'none';
+  restartMenu.style.display = 'none';
+}
+
+// Start game function
+function startGame() {
+  resetGameVariables();
+  startTimer(); // Start the timer when the game begins
+}
+
+// Reset game variables
+function resetGameVariables() {
+  score = 0;
+  timer = 30;
+  clickPower = 1;
+  autoInvestorActive = false;
+  level = 1;
+  updateUI();
+  resetShopButtons();
+}
+
+// Update UI elements
+function updateUI() {
+  scoreElement.textContent = score;
+  timerElement.textContent = timer;
+  levelElement.textContent = level;
+  progressBar.style.width = "0%";
+  clickerButton.disabled = false; // Ensure the clicker is enabled
+}
+
+// Timer countdown
+function startTimer() {
+  gameInterval = setInterval(() => {
+    if (timer > 0) {
+      timer--;
+      timerElement.textContent = timer;
+    } else {
+      clearInterval(gameInterval); // Stop timer when it reaches zero
+      endGame();
+    }
+  }, 1000);
+}
+
+// Clicker functionality
+clickerButton.addEventListener('click', (event) => {
+  updateScore(clickPower);
+  playClickSound();
+  scatterCoins(event.clientX, event.clientY); // Scatter coins on click
+});
+
+// Update score and handle level progression
+function updateScore(points) {
+  score += points;
+  scoreElement.textContent = score;
+  
+  // Level progression
+  const newLevel = Math.floor(score / 100) + 1;
+  if (newLevel > level) {
+    level = newLevel;
+    levelElement.textContent = level;
+    highestLevel = Math.max(highestLevel, level);
+    highestLevelElement.textContent = highestLevel; 
+    localStorage.setItem('highestLevel', highestLevel);
+    showNotification(`Level up! You are now Level ${level}`);
+    playPowerUpSound();
+  }
+
+  // Enable shop buttons based on score
+  upgradeButton.disabled = score < 50;
+  timeBoostButton.disabled = score < 100;
+  autoInvestorButton.disabled = score < 200;
+  enableLuxuryButtons();
+  updateProgressBar();
+}
+
+// Enable luxury item buttons based on total money
+function enableLuxuryButtons() {
+  const luxuryItems = [
+    { id: 'luxury-item1', cost: 500 },
+    { id: 'luxury-item2', cost: 700 },
+    { id: 'luxury-item3', cost: 1000 },
+    { id: 'luxury-item4', cost: 1500 },
+    { id: 'luxury-item5', cost: 200 },
+    { id: 'luxury-item6', cost: 300 },
+    { id: 'luxury-item7', cost: 800 },
+    { id: 'luxury-item8', cost: 250 },
+    { id: 'luxury-item9', cost: 5000 },
+    { id: 'luxury-item10', cost: 10000 },
+  ];
+
+  luxuryItems.forEach(item => {
+    document.getElementById(item.id).disabled = totalMoney < item.cost;
+  });
+}
+
+// Upgrade power
+upgradeButton.addEventListener('click', () => {
+  if (score >= 50) {
+    score -= 50;
+    clickPower++;
+    scoreElement.textContent = score;
+    upgradeButton.disabled = true;
+    showNotification(`You upgraded your skills! Your click power is now ${clickPower}`);
+  }
+});
+
+// Extend time
+timeBoostButton.addEventListener('click', () => {
+  if (score >= 100) {
+    score -= 100;
+    timer += 10;
+    scoreElement.textContent = score;
+    timerElement.textContent = timer;
+    timeBoostButton.disabled = true;
+    showNotification("You extended your time by 10 seconds!");
+    playPowerUpSound();
+  }
+});
+
+// Auto-investor activation
+autoInvestorButton.addEventListener('click', () => {
+  if (score >= 200 && !autoInvestorActive) {
+    score -= 200;
+    autoInvestorActive = true;
+    scoreElement.textContent = score;
+
+    // Start auto-investor
+    autoInvestorInterval = setInterval(() => {
+      if (timer > 0) {
+        updateScore(1);
+      } else {
+        clearInterval(autoInvestorInterval);
+      }
+    }, 1000);
+
+    autoInvestorButton.disabled = true;
+    showNotification("Auto-Investor activated! You will earn 1 wealth every second.");
+    playPowerUpSound();
+  }
+});
+
+// Luxury item purchases
+document.querySelectorAll('.luxury-theme').forEach(button => {
+  button.addEventListener('click', () => {
+    const cost = parseInt(button.textContent.match(/\d+/)[0]);
+    if (totalMoney >= cost) {
+      totalMoney -= cost; 
+      localStorage.setItem('totalMoney', totalMoney); 
+      totalMoneyElement.textContent = totalMoney; 
+      addToInventory(button.textContent.split(' - ')[0]); 
+      button.disabled = true; 
+      showNotification(`You bought a ${button.textContent.split(' - ')[0]}!`);
+    } else {
+      showNotification("You don't have enough wealth to buy this item!");
+    }
+  });
+});
+
+// Update progress bar
+function updateProgressBar() {
+  const progressPercentage = (score % 100) * 100 / 100;
+  progressBar.style.width = progressPercentage + "%";
+}
+
+// End game function
+function endGame() {
+  finalScoreElement.textContent = score;
+  disableButtons();
+  clearInterval(gameInterval); 
+  clearInterval(autoInvestorInterval); 
+  gameScreen.style.display = 'none';
+  restartMenu.style.display = 'block';
+
+  totalMoney += score; 
+  localStorage.setItem('totalMoney', totalMoney); 
+  totalMoneyElement.textContent = totalMoney; 
+}
+
+// Disable all buttons
+function disableButtons() {
+  upgradeButton.disabled = true;
+  timeBoostButton.disabled = true;
+  autoInvestorButton.disabled = true;
+  document.querySelectorAll('.luxury-theme').forEach(button => button.disabled = true);
+}
+
+// Restart game
+document.getElementById('restart-button').addEventListener('click', () => {
+  restartMenu.style.display = 'none';
+  startScreen.style.display = 'block'; 
+  resetGameVariables(); 
+  totalMoneyElement.textContent = totalMoney; 
+  highestLevelElement.textContent = highestLevel; 
+});
+
+// Reset shop buttons
+function resetShopButtons() {
+  document.querySelectorAll('.luxury-theme').forEach(button => {
+    button.disabled = true; 
+  });
+  upgradeButton.disabled = true; 
+  timeBoostButton.disabled = true; 
+  autoInvestorButton.disabled = true; 
+}
+
+// Display notification
+function showNotification(message) {
+  const notification = document.createElement('div');
+  notification.textContent = message;
+  notification.style.position = 'fixed';
+  notification.style.top = '20px';
+  notification.style.left = '50%';
+  notification.style.transform = 'translateX(-50%)';
+  notification.style.background = 'rgba(0, 0, 0, 0.7)';
+  notification.style.color = '#fff';
+  notification.style.padding = '10px';
+  notification.style.borderRadius = '5px';
+  document.body.appendChild(notification);
+  
+  setTimeout(() => {
+    document.body.removeChild(notification);
+  }, 3000);
+}
+
+// Scatter coins animation with protective range
+function scatterCoins(x, y) {
+  const coinCount = 10; // Number of coins to scatter
+  const clickerRect = clickerButton.getBoundingClientRect();
+  const clickerCenterX = clickerRect.left + clickerRect.width / 2;
+  const clickerCenterY = clickerRect.top + clickerRect.height / 2;
+
+  const protectiveRange = 50; // Protective range around the mouse pointer
+
+  for (let i = 0; i < coinCount; i++) {
+    const coin = document.createElement('div');
+    coin.classList.add('coin');
+    coin.textContent = '🪙';
+
+    let scatterX, scatterY;
+
+    do {
+      scatterX = (Math.random() - 0.5) * 200; 
+      scatterY = (Math.random() - 0.5) * 200; 
+    } while (
+      Math.abs(scatterX) < protectiveRange && 
+      Math.abs(scatterY) < protectiveRange
+    );
+
+    coin.style.setProperty('--x', `${scatterX}px`);
+    coin.style.setProperty('--y', `${scatterY}px`);
+
+    coin.style.position = 'absolute';
+    coin.style.left = `${x + scatterX}px`;
+    coin.style.top = `${y + scatterY}px`;
+    document.body.appendChild(coin);
+
+    setTimeout(() => {
+      document.body.removeChild(coin);
+    }, 500);
+  }
+}
+
+// Toggle sound functionality
+document.getElementById('toggle-sound').addEventListener('click', () => {
+  soundMuted = !soundMuted;
+  if (soundMuted) {
+    backgroundSound.pause(); // Stop background sound
+    document.getElementById('toggle-sound').textContent = 'Play Sound'; // Change button text
+  } else {
+    backgroundSound.play(); // Play background sound
+    document.getElementById('toggle-sound').textContent = 'Mute Sound'; // Change button text
+  }
+});
+
+// Play sounds
+function playClickSound() {
+  if (!soundMuted) {
+    clickSound.currentTime = 0; 
+    clickSound.play();
+  }
+}
+
+function playPowerUpSound() {
+  if (!soundMuted) {
+    powerUpSound.currentTime = 0; 
+    powerUpSound.play();
+  }
+}
+
+
+// Add item to inventory
+function addToInventory(item) {
+  const listItem = document.createElement('li');
+  listItem.textContent = item;
+  inventoryList.appendChild(listItem);
+}
+</script>
+</body>
+</html>
