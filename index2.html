@@ -1,0 +1,1836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rich Rich Richer Game</title>
+  <style>
+/* -------------------------------------------------
+   COMPLETE, CLEANED, AND DEBUGGED GAME STYLESHEET
+   -------------------------------------------------
+   NOTE:
+   • Import the required fonts in your <head>:
+     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Orbitron:wght@400;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+   ------------------------------------------------- */
+
+/* ===== 1. RESET & GLOBAL BASE ===== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Orbitron', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%);
+  color: #222;
+  text-align: center;
+  user-select: none;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: 40px 20px;
+  overflow-x: hidden;
+}
+
+/* ===== 2. WATERMARK ===== */
+#watermark {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Dancing Script', cursive;
+  font-size: 4rem;
+  font-weight: 700;
+  background: linear-gradient(90deg, #ffd700, #ff4081, #ff6f00);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-align: center;
+  letter-spacing: 3px;
+  pointer-events: none;
+  user-select: none;
+  animation: watermark-fade 7s ease forwards;
+  z-index: 1;
+}
+
+@keyframes watermark-fade {
+  0%   { opacity: 0; }
+  10%,90% { opacity: 0.18; }
+  100% { opacity: 0; }
+}
+
+/* ===== 3. TYPOGRAPHY ===== */
+h1, h2, h3 {
+  font-family: 'Press Start 2P', cursive;
+  color: #ff5722;
+  text-shadow: 2px 2px 0 #fff3e0;
+  user-select: none;
+}
+
+h1 { font-size: 2.8rem; margin-bottom: 20px; }
+h2 { font-size: 1.8rem; margin: 10px 0 25px; }
+h3 {
+  font-size: 1.4rem;
+  color: #bf360c;
+  margin-bottom: 15px;
+  text-shadow: 0 1px 0 #fff3e0;
+}
+
+/* ===== 4. SCREEN WRAPPER ===== */
+.screen {
+  max-width: 440px;
+  background: rgba(255,255,255,0.9);
+  margin: 0 auto 40px;
+  padding: 30px;
+  border-radius: 30px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+  display: none;
+  animation: slideIn 0.8s ease forwards;
+  position: relative;
+  z-index: 2;
+}
+#start-screen { display: block; animation: fadeIn 1s ease-out; }
+
+@keyframes slideIn {
+  from { transform: translateY(50px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+/* ===== 5. GAME CAROUSEL ===== */
+.game-carousel {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  gap: 25px;
+  padding: 20px 10px;
+  margin: 30px auto;
+  max-width: 100%;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.game-carousel::-webkit-scrollbar { display: none; }
+
+.game-card {
+  flex: 0 0 auto;
+  width: 260px;
+  height: 200px;
+  background: linear-gradient(145deg,#ffe082,#ffd54f);
+  border-radius: 20px;
+  padding: 20px;
+  border: 3px dashed #ff6f00;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: left;
+  cursor: pointer;
+  scroll-snap-align: center;
+  transition: transform .4s ease, box-shadow .3s ease;
+}
+.game-card:hover {
+  transform: scale(1.1);
+  box-shadow: 0 15px 30px rgba(255,111,0,0.5);
+}
+.game-card h3 { font-size: 1rem; color: #e65100; margin-bottom: 10px; }
+.game-card p  { font-size: .9rem; color: #4e342e; }
+
+/* ===== 6. ADVERTISEMENT BANNER ===== */
+#advertisement {
+  background: #ffcc80;
+  border-radius: 15px;
+  box-shadow: 0 3px 8px rgba(255,152,0,0.5);
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: #bf360c;
+  padding: 15px 20px;
+  margin: 20px 0 30px;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  animation: pulse 2s infinite ease-in-out;
+}
+
+/* ===== 7. BUTTONS ===== */
+button {
+  background: linear-gradient(145deg,#ff6f00,#ff9100);
+  color: #fff;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 18px;
+  box-shadow: 0 5px 10px rgba(255,111,0,0.5);
+  font-weight: 700;
+  font-size: 1.1rem;
+  cursor: pointer;
+  margin: 10px 5px 15px;
+  transition: background .3s, transform .2s;
+  user-select: none;
+}
+button:hover,button:focus {
+  background: linear-gradient(145deg,#ff9100,#ffb533);
+  transform: scale(1.05);
+  outline: none;
+}
+button:active { transform: scale(0.97); }
+
+/* ===== 8. CLICKER BUTTON ===== */
+#clicker-button {
+  background: radial-gradient(circle at center,#ffb300,#ff6f00);
+  width: 180px; height: 180px;
+  border-radius: 50%;
+  font-size: 120px; color: #fff;
+  border: 5px solid #ff6f00;
+  margin: 0 auto 25px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 15px #ffb300, inset 0 0 30px #fff59d, inset 0 0 40px #ffb300;
+  animation: rotateForever 10s linear infinite;
+  transition: box-shadow .3s ease;
+}
+#clicker-button:hover {
+  box-shadow: 0 0 25px #fff59d, inset 0 0 50px #ffea00, inset 0 0 60px #ffb300;
+}
+#clicker-button:active {
+  transform: scale(0.95);
+  box-shadow: 0 0 10px #ffa000, inset 0 0 20px #f57c00;
+}
+
+/* ===== 9. PROGRESS BAR ===== */
+#progress-container {
+  width: 100%; height: 25px; margin-top: 15px;
+  background: #ffe0b2;
+  border-radius: 15px;
+  box-shadow: inset 0 0 6px rgba(255,152,0,0.7);
+  overflow: hidden;
+}
+#progress {
+  width: 0%; height: 100%;
+  background: linear-gradient(90deg,#ff6f00,#ffd54f);
+  border-radius: 15px 0 0 15px;
+  transition: width .3s ease;
+}
+
+/* ===== 10. SHOP SECTION ===== */
+.shop-theme {
+  background: #fff3e0;
+  border-radius: 20px;
+  padding: 15px 20px;
+  box-shadow: 0 6px 18px rgba(255,183,77,0.6);
+  margin-top: 30px;
+  display: none;
+}
+#il { overflow-x: auto; white-space: nowrap; margin-bottom: 20px; }
+
+.upgrade-theme,.luxury-theme {
+  background: linear-gradient(45deg,#ff6f00,#ffa726);
+  color:#fff;
+  border:none;
+  border-radius:15px;
+  padding:12px 22px;
+  font-weight:700;
+  font-size:1rem;
+  box-shadow:0 3px 10px rgba(255,152,0,.7);
+  cursor:pointer;
+  margin:5px 10px;
+  transition:background .4s, transform .2s;
+}
+.upgrade-theme:hover,.luxury-theme:hover {
+  background: linear-gradient(45deg,#ffa726,#ffb74d);
+  transform:scale(1.1);
+}
+
+/* ===== 11. AUCTION SECTION ===== */
+#auctionContainer { max-width:100%; padding:30px 20px; margin:0 auto; }
+.tile-container {
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+  gap:24px;
+  margin-bottom:40px;
+}
+.auction-tile {
+  background:#fff8e1;
+  border:3px solid gold;
+  border-radius:20px;
+  padding:16px;
+  color:#bf360c;
+  text-align:center;
+  box-shadow:0 6px 25px rgba(255,183,77,0.6);
+  transition:transform .3s, box-shadow .3s;
+  position:relative;
+  overflow:hidden;
+  animation:popIn .4s ease;
+  z-index:1;
+}
+.auction-tile::before {
+  content:"";
+  position:absolute; inset:-6px;
+  background:linear-gradient(135deg,orange,gold,red,orangered);
+  border-radius:25px;
+  animation:borderPulse 2s infinite ease-in-out;
+  z-index:-1;
+}
+.auction-tile:hover {
+  background:#fff0c1;
+  transform:scale(1.04);
+  box-shadow:0 10px 35px rgba(255,140,0,.8);
+  border-color:#ffcc00;
+}
+.auction-tile input[type="number"] {
+  width:80%; padding:6px 10px; margin-top:10px;
+  border:2px solid darkorange; border-radius:10px;
+  font-size:14px; outline:none;
+  transition:border-color .3s;
+}
+.auction-tile input[type="number"]:focus { border-color:red; }
+.auction-tile button {
+  margin-top:10px; padding:8px 14px;
+  background:darkorange; color:#fff;
+  border:none; border-radius:12px;
+  font-weight:700; font-size:14px;
+  cursor:pointer; transition:background .3s;
+}
+.auction-tile button:hover { background:orangered; }
+
+/* ===== 12. SCORE / MISC TEXT ===== */
+#sp,.sp,#total-money,#highest-level {
+  font-weight:700; font-size:1.1rem; margin-top:10px; color:#d84315;
+}
+.bac { color:red; }
+#imp { color:yellow; }
+
+/* ===== 13. GUESS‑THE‑NUMBER GAME ===== */
+#guess-number-game {
+  max-width:400px; margin:0 auto 40px;
+  background:#fffde7; padding:30px 25px;
+  border-radius:25px;
+  box-shadow:0 10px 30px rgba(255,241,118,.5);
+  color:#bf360c; font-weight:700;
+  display:none;
+}
+
+/* ===== 14. FORM INPUTS ===== */
+input[type="number"],input[type="text"] {
+  width:150px;
+  padding:8px 12px; margin-bottom:15px;
+  border:2px solid #ffb300; border-radius:15px;
+  font-size:1rem; text-align:center;
+  box-shadow:0 0 10px #ffcc00;
+  transition:border-color .3s;
+}
+input[type="number"]:focus,
+input[type="text"]:focus {
+  border-color:#ff6f00; outline:none;
+}
+
+/* =====  Jackpot ===== */
+
+.machine {
+      background: #ffdd00;
+      border: 5px solid #ff9900;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 0 25px #ff9900aa;
+      width: 400px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .reels {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 15px;
+    }
+    .reel {
+      background: #fff3e0;
+      border: 3px solid #ff9900;
+      border-radius: 10px;
+      width: 80px;
+      height: 80px;
+      font-size: 3rem;
+      line-height: 80px;
+      box-shadow: inset 0 0 10px #ff9900aa;
+      color: #4a4a4a;
+      transition: transform 0.5s ease;
+    }
+    .spin-btn {
+      background: #ff9900;
+      border: none;
+      border-radius: 20px;
+      padding: 15px 30px;
+      font-size: 1.2rem;
+      color: white;
+      cursor: pointer;
+      transition: transform 0.2s ease, background 0.3s;
+      margin: 10px;
+      box-shadow: 0 0 10px #ff7f00;
+    }
+    .spin-btn:hover {
+      transform: scale(1.1);
+      background: #ff7f00;
+    }
+    .info {
+      font-size: 1.2rem;
+      margin: 10px 0;
+      color: #4a4a4a;
+    }
+    input[type=number] {
+      width: 80px;
+      font-size: 1rem;
+      padding: 5px;
+      text-align: center;
+      border-radius: 8px;
+      border: 2px solid #ff9900;
+      margin-top: 5px;
+      background: #fff;
+    }
+    .coin {
+      position: absolute;
+      font-size: 1.5rem;
+      z-index: 1;
+      animation: fall 2.5s ease-out forwards;
+      pointer-events: none;
+    }
+    @keyframes fall {
+      0% { opacity: 1; transform: translate(0, 0) rotate(0deg); }
+      100% { opacity: 0; transform: translate(var(--x), var(--y)) rotate(720deg); }
+    }
+    .msg {
+      margin-top: 10px;
+      font-size: 1.2rem;
+      color: #ff9900;
+      text-shadow: 0 0 5px #ff9900;
+    }
+    .streak-title {
+      font-size: 1.2rem;
+      color: #4a4a4a;
+      margin-top: 10px;
+      display: none;
+    }
+    .sad-animation {
+      display: none;
+      font-size: 3rem;
+      color: #ff0000;
+      animation: shake 0.5s infinite alternate;
+    }
+    @keyframes shake {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-10px); }
+    }
+
+/* ===== 15. RESTART MENU ===== */
+#restart-menu { display:none; margin-top:30px; }
+
+/* ===== 16. ANIMATIONS ===== */
+@keyframes fadeIn {
+  from { opacity:0; transform:translateY(15px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+@keyframes pulse {
+  0%,100% { transform:scale(1); }
+  50%     { transform:scale(1.07); }
+}
+@keyframes popIn {
+  from { opacity:0; transform:scale(.8); }
+  to   { opacity:1; transform:scale(1); }
+}
+@keyframes rotateForever {
+  0% { transform:rotate(0deg);   }
+ 100% { transform:rotate(360deg); }
+}
+@keyframes borderPulse {
+  0%   { box-shadow:0 0 5px 2px rgba(255,215,0,.7); }
+  50%  { box-shadow:0 0 12px 6px rgba(255,165,0,1); }
+  100% { box-shadow:0 0 5px 2px rgba(255,215,0,.7); }
+}
+
+ </style>
+
+</head>
+<body>
+<div id="watermark" style="display: block;">
+        <p style="color: golden; font-family: 'Dancing Script', cursive;">Beautiful Games</p>
+    </div>
+<!-- Start Screen -->
+<div id="start-screen" class="screen" style="display: none;">
+    <h1>💰 Rich Rich Richer 💰</h1>
+    <p id="advertisement">🚀 Big updates on the way—stay, tap, and slay!</p>
+
+     <p class="sp">Total Money: <span id="total-money">0</span> 🪙</p>
+    <p class="sp">Highest Level Reached: <span id="highest-level">1</span></p>
+    <div class="game-carousel">
+      <div class="game-card" onclick="showScreen('game-screen')">
+        <h3>💰 Wealth Builder</h3>
+        <p>Tap to grow rich and upgrade your empire!</p>
+        <button id="start-button" class="upgrade">Start Accumulating Wealth</button>
+      </div>
+      <div class="game-card" onclick="showScreen('shop')">
+        <h3>🏦 Auction Tycoon</h3>
+        <p>Spend, bid, and invest in luxurious items!</p>
+        <button id="shop-button" class="upgrade">Enter Auction</button>
+      </div>
+      <div class="game-card" onclick="showScreen('double-or-nothing')">
+        <h3>🎰 JACKPOT MANIA </h3>
+        <p>Risk on your bet and get 10x...</p>
+        <button id="jackb" class="upgrade">Jackpot</button>
+      </div>
+      <div class="game-card" onclick="showScreen('guess-number-game')">
+        <h3>🎯 Number Guess</h3>
+        <p>Place your bid and guess to win more!</p>
+        <button id="guess-game-button" class="upgrade">Play Guess the Number Game</button>
+                        <!-- Rewarded Ad Section -->
+             <div id="rewarded-video-ad-guess" style="display:none; margin-top: 10px;">
+              <button id="watch-ad-guess" class="upgrade-theme">
+                      🎥 Watch Ad to Unlock 1 Extra Guess
+             </button>
+            </div>
+      </div>
+      <div class="game-card" onclick="showScreen('tile-game')">
+        <h3>💎 Treasure Tile</h3>
+        <p>Guess the lucky tile to find riches!</p>
+      </div>
+    </div>
+  </div>
+
+<!-- Shop Screen -->
+<div id="shop" class="shop-theme">
+    <h2>Claim Your Legacy: Where Ambition Meets Luxury!</h2>
+    <p>Your Name: <input type="text" id="playerName" placeholder="Enter your name..."><button onclick="setName()">Set</button></p>
+    <p>ID: <span id="playerId">Not Set</span> | Money: <span id="shop-total-money">0</span> 🪙</p>
+    <div id="auctionContainer"></div>
+    <div id="auctionRows"></div>
+
+    <button id="close-shop" class="upgrade-theme">Leave Auction</button>
+</div>
+
+<!-- Guess the Number Game Section -->
+<div id="guess-number-game" style="display:none;">
+    <h3>🎯 Guess the Number Game</h3>
+     <p id="guess-range"></p>
+    <label for="bid-amount">Enter your Bid (🪙):</label>
+    <input type="number" id="bid-amount" min="1">
+    <button id="submit-bid">Place Bid</button>
+
+    <br><br>
+    <div id="guess-range-notification"></div>
+
+    <label for="guess-number">Your Guess:</label>
+    <input type="number" id="guess-number" disabled>
+    <button id="submit-guess" disabled>Submit Guess</button>
+
+    <p id="guess-chances">Chances Left: 3</p>
+
+    <p>💰 Current Balance: <span id="current-total-money">0</span> 🪙</p>
+    <button id="back-to-home">⬅️ Back to Home</button>
+</div>
+
+
+<!-- Main Game Screen -->
+<div id="game-screen" class="screen">
+    <h4 class="sp">
+        Wealth: <span id="score">0</span> 🪙 --- 
+        Time Left: <span id="timer">30</span>s --- 
+        Level: <span id="level">1</span>
+    </h4>
+    <div id="progress-container"><div id="progress"></div></div>
+    <button id="clicker-button">🪙</button>
+    <h2 class="sp">Investment Options</h2>
+    <button id="upgrade" class="upgrade-theme" disabled>Double clicks - 50 🪙</button>
+    <button id="time-boost" class="upgrade-theme" disabled>Extend Time - 100 🪙</button>
+    <button id="auto-investor" class="upgrade-theme" disabled>Auto-Investor - 200 🪙</button>
+    <p><button id="end-game-button">End Game</button></p>
+</div>
+
+<!--jackpot-->
+  <div id="jack" style="display: none;">
+  <h1>🎰 JACKPOT MANIA</h1>
+  <div class="machine">
+    <div class="reels">
+      <div class="reel" id="reel1">🍒</div>
+      <div class="reel" id="reel2">🍋</div>
+      <div class="reel" id="reel3">🍊</div>
+    </div>
+    <div class="info">
+      Balance: <span id="balance">100</span> 🪙<br>
+      Bet: <input type="number" id="bet" value="10" min="1" max="100" />
+    </div>
+    <button class="spin-btn" onclick="startSpin()">SPIN</button>
+    <p class="msg" id="message">Pull the lever!</p>
+    <p class="streak-title" id="streakTitle"></p>
+    <p class="sad-animation" id="sadAnimation">😢</p>
+    <button id="back1">⬅️ Back to Home</button>
+  </div>
+
+  <audio id="coinSound" src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_f891d8c8d7.mp3?filename=coin-win-19942.mp3" preload="auto"></audio>
+  <audio id="spinSound" src="https://cdn.pixabay.com/download/audio/2021/07/07/audio_506539.mp3" preload="auto"></audio>
+</div>
+<!-- Restart Menu -->
+<div id="restart-menu" class="screen">
+    <h2 class="np">Game Over! Your final wealth is <span id="final-score">0</span> 🪙</h2>
+    <button id="restart-button" class="upgrade">Restart Your Wealth Journey</button>
+</div>
+
+<!-- Interstitial Ad Screen -->
+<div id="interstitial-ad-screen" style="display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: #000000ee; z-index: 9999; color: white; text-align: center; padding-top: 20%;">
+    <h2>📺 Sponsored Ad</h2>
+    <p>Ad ends in <span id="ad-timer">5</span> seconds...</p>
+    <button id="close-ad-button" style="display: none; padding: 10px 20px; font-size: 18px;">Close Ad</button>
+    <p><h1>Thanks for supporting the game!</h2></p>
+    <p><h3>Your support matters!</h3></p>
+</div>
+
+<!-- Audio -->
+<audio id="background-sound" src="https://raw.githubusercontent.com/AmitVardhn/Rich_Rich_Richer/main/Click,%20Tap,%20Stack%20It%20Up!.mp3" loop></audio>
+<audio id="click-sound" src="https://raw.githubusercontent.com/AmitVardhn/Rich_Rich_Richer/main/games%20coin%20clicker%20sound.mp3"></audio>
+<audio id="power-up-sound" src="https://raw.githubusercontent.com/AmitVardhn/Rich_Rich_Richer/main/power%20up%20sound.mp3"></audio>
+
+
+<script>
+// Game Variables
+let score = 0; // Wealth starts at 0
+let timer = 30;
+let clickPower = 1;
+let autoInvestorActive = false;
+let level = 1;
+let totalMoney = localStorage.getItem('totalMoney') ? parseInt(localStorage.getItem('totalMoney')) : 0;
+let highestLevel = localStorage.getItem('highestLevel') ? parseInt(localStorage.getItem('highestLevel')) : 1;
+let gameInterval; // Timer interval
+let autoInvestorInterval; // Auto-investor interval
+let soundMuted = false; // State to track if sound is muted
+
+// Base costs
+const BASE_UPGRADE_COST = 50;
+const BASE_TIME_BOOST_COST = 75;
+const BASE_AUTO_INVESTOR_COST = 200;
+
+// DOM Elements
+const scoreElement = document.getElementById('score');
+const timerElement = document.getElementById('timer');
+const levelElement = document.getElementById('level');
+const clickerButton = document.getElementById('clicker-button');
+const upgradeButton = document.getElementById('upgrade');
+const timeBoostButton = document.getElementById('time-boost');
+const autoInvestorButton = document.getElementById('auto-investor');
+const finalScoreElement = document.getElementById('final-score');
+const restartMenu = document.getElementById('restart-menu');
+const progressBar = document.getElementById('progress');
+const startScreen = document.getElementById('start-screen');
+const gameScreen = document.getElementById('game-screen');
+const totalMoneyElement = document.getElementById('total-money');
+const shoptotalMoneyElement = document.getElementById('shop-total-money');
+const highestLevelElement = document.getElementById('highest-level');
+const inventoryList = document.getElementById('inventory-list');
+const backgroundSound = document.getElementById('background-sound');
+const clickSound = document.getElementById('click-sound');
+const powerUpSound = document.getElementById('power-up-sound');
+const wealthText = document.getElementById('wealth-text'); // Element for wealth text position
+
+// Disable text selection and Enter key
+document.addEventListener('selectstart', (event) => event.preventDefault());
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Enter') {
+    event.preventDefault();
+  }
+});
+
+// Show watermark and then start screen
+window.onload = () => {
+  document.getElementById('watermark').style.display = 'block'; // Show watermark
+  setTimeout(() => {
+    document.getElementById('watermark').style.display = 'none'; // Hide watermark
+    startScreen.style.display = 'block'; // Show start screen
+    totalMoneyElement.textContent = totalMoney; // Display total money
+    highestLevelElement.textContent = highestLevel; // Display highest level
+  }, 5000); // 5 seconds duration
+};
+
+// Start the game
+document.getElementById('start-button').addEventListener('click', () => {
+  score = 0; // Ensure wealth starts at 0
+  startScreen.style.display = 'none';
+  gameScreen.style.display = 'block';
+  startGame();
+  backgroundSound.play(); // Start background sound
+});
+
+// Start the jackpot
+document.getElementById('jackb').addEventListener('click', () => {
+  startScreen.style.display = 'none';
+  document.getElementById('jack').style.display = 'block';
+  backgroundSound.play(); // Start background sound
+});
+
+// Open shop
+document.getElementById('shop-button').addEventListener('click', () => {
+    hideGameElements();
+    document.getElementById('shop').style.display = 'block';
+    totalMoney = localStorage.getItem('totalMoney') ? parseFloat(localStorage.getItem('totalMoney')) : 0;
+    shoptotalMoneyElement.textContent = totalMoney; // Set shop money equal to total money
+    updateTotalMoneyDisplay(); // Update total money on the start screen
+    backgroundSound.play(); // Start background sound
+    showAdScreen();
+});
+
+// Close shop
+document.getElementById('close-shop').addEventListener('click', () => {
+    document.getElementById('shop').style.display = 'none';
+    showGameElements();
+    totalMoney = localStorage.getItem('totalMoney') ? parseFloat(localStorage.getItem('totalMoney')) : 0;
+    shoptotalMoneyElement.textContent = totalMoney; // Ensure shop money equals total money
+    updateTotalMoneyDisplay(); // Update total money on the start screen
+});
+
+// Update total money display
+function updateTotalMoneyDisplay() {
+    const totalMoney = localStorage.getItem('totalMoney') ? parseFloat(localStorage.getItem('totalMoney')) : 0;
+    document.getElementById("shop-total-money").innerText = totalMoney; // Update the displayed total money
+    document.getElementById("total-money").innerText = totalMoney; // Update the displayed money on the start screen
+}
+
+// Event listener for the "Leave Auction" button
+document.getElementById("close-shop").addEventListener("click", () => {
+    // Your logic for leaving the auction goes here
+
+    // Update the total money display when leaving the auction
+    updateTotalMoneyDisplay();
+});
+
+// Initial call to display the money immediately on load
+updateTotalMoneyDisplay();
+
+// Function to hide game elements
+function hideGameElements() {
+  gameScreen.style.display = 'none';
+  startScreen.style.display = 'none';
+  restartMenu.style.display = 'none';
+}
+
+// Function to show game elements
+function showGameElements() {
+  gameScreen.style.display = 'none';
+  startScreen.style.display = 'block';
+  restartMenu.style.display = 'none';
+}
+
+// Start game function
+function startGame() {
+  resetGameVariables();
+  const savedTotalMoney = localStorage.getItem('totalMoney');
+  if (savedTotalMoney) {
+    totalMoney = parseInt(savedTotalMoney);
+  }
+  totalMoneyElement.textContent = totalMoney; // Update displayed total money
+  startTimer(); // Start the timer when the game begins
+}
+
+// Reset game variables
+function resetGameVariables() {
+  score = 0; // Reset wealth to 0
+  timer = 30;
+  clickPower = 1;
+  autoInvestorActive = false;
+  level = 1;
+  updateUI();
+  resetShopButtons();
+}
+
+// Update UI elements
+function updateUI() {
+  scoreElement.textContent = score;
+  timerElement.textContent = timer;
+  levelElement.textContent = level;
+  progressBar.style.width = "0%";
+  updateButtonCosts(); // Update button texts for costs
+}
+
+// Timer countdown
+function startTimer() {
+    const totalDuration = timer; // Store the initial timer value
+    gameInterval = setInterval(() => {
+        if (timer > 0) {
+            timer--;
+            timerElement.textContent = timer;
+
+            // Update progress bar based on remaining time
+            const progressPercentage = ((totalDuration - timer) / totalDuration) * 100; 
+            progressBar.style.width = progressPercentage + "%";
+        } else {
+            clearInterval(gameInterval); // Stop timer when it reaches zero
+            endGame();
+        }
+    }, 1000);
+}
+
+
+// Clicker functionality
+clickerButton.addEventListener('click', (event) => {
+  const currentTime = Date.now();
+  lastClickTime = currentTime;
+
+  updateScore(clickPower);
+  playClickSound();
+  scatterCoins(event.clientX, event.clientY); // Scatter coins on click
+});
+
+// Update score and handle level progression
+function updateScore(points) {
+  score += points;
+  scoreElement.textContent = score;
+
+  // Level progression
+  const newLevel = Math.floor(score / 100) + 1;
+  if (newLevel > level) {
+    level = newLevel;
+    levelElement.textContent = level;
+    highestLevel = Math.max(highestLevel, level);
+    highestLevelElement.textContent = highestLevel; 
+    localStorage.setItem('highestLevel', highestLevel);
+    showNotification(`Level up! You are now Level ${level}`);
+    playPowerUpSound();
+  }
+
+  // Update button states based on score
+  updateButtonCosts();
+}
+
+// Function to calculate current upgrade costs based on level
+function calculateUpgradeCost(baseCost) {
+  return Math.floor(baseCost * Math.pow(1.5, level - 1)); // 50% increase per level
+}
+
+// Update button texts to show current costs
+function updateButtonCosts() {
+  upgradeButton.textContent = `Upgrade (Cost: ${calculateUpgradeCost(BASE_UPGRADE_COST)})`;
+  timeBoostButton.textContent = `Time Boost (Cost: ${calculateUpgradeCost(BASE_TIME_BOOST_COST)})`;
+  autoInvestorButton.textContent = `Auto Investor (Cost: ${calculateUpgradeCost(BASE_AUTO_INVESTOR_COST)})`;
+  
+  // Enable or disable buttons based on score
+  upgradeButton.disabled = score < calculateUpgradeCost(BASE_UPGRADE_COST);
+  timeBoostButton.disabled = score < calculateUpgradeCost(BASE_TIME_BOOST_COST);
+  autoInvestorButton.disabled = score < calculateUpgradeCost(BASE_AUTO_INVESTOR_COST);
+}
+
+// Upgrade power
+upgradeButton.addEventListener('click', () => {
+  const upgradeCost = calculateUpgradeCost(BASE_UPGRADE_COST);
+  if (score >= upgradeCost) {
+    score -= upgradeCost;
+    clickPower++;
+    scoreElement.textContent = score;
+    upgradeButton.disabled = true;
+    showNotification(`You upgraded your skills! Your click power is now ${clickPower}`);
+    updateButtonCosts(); // Update button texts after upgrade
+  }
+});
+
+// Extend time
+timeBoostButton.addEventListener('click', () => {
+  const timeBoostCost = calculateUpgradeCost(BASE_TIME_BOOST_COST);
+  if (score >= timeBoostCost) {
+    score -= timeBoostCost;
+    timer += 10;
+    scoreElement.textContent = score;
+    timerElement.textContent = timer;
+    timeBoostButton.disabled = true;
+    showNotification("You extended your time by 10 seconds!");
+    playPowerUpSound();
+    updateButtonCosts(); // Update button texts after time boost
+  }
+});
+
+// Auto-investor activation
+autoInvestorButton.addEventListener('click', () => {
+  const autoInvestorCost = calculateUpgradeCost(BASE_AUTO_INVESTOR_COST);
+  if (score >= autoInvestorCost && !autoInvestorActive) {
+    score -= autoInvestorCost;
+    autoInvestorActive = true;
+    scoreElement.textContent = score;
+
+    // Start auto-investor
+    autoInvestorInterval = setInterval(() => {
+      if (timer > 0) {
+        updateScore(1);
+      } else {
+        clearInterval(autoInvestorInterval);
+      }
+    }, 1000);
+
+    autoInvestorButton.disabled = true;
+    showNotification("Auto-Investor activated! You will earn 1 wealth every second.");
+    playPowerUpSound();
+  }
+});
+
+// Update progress bar
+function updateProgressBar() {
+  const progressPercentage = (score % 100) * 100 / 100;
+  progressBar.style.width = progressPercentage + "%";
+}
+
+document.getElementById('end-game-button').addEventListener('click', () => {
+    timer = 0; // Set timer to 0
+    endGame(); // Trigger the end game sequence
+});
+
+// End game function
+function endGame() {
+  finalScoreElement.textContent = score;
+  clearInterval(gameInterval); 
+  clearInterval(autoInvestorInterval); 
+  gameScreen.style.display = 'none';
+  restartMenu.style.display = 'block';
+  showAdScreen();
+
+  totalMoney += score; // Update total money with score
+  localStorage.setItem('totalMoney', totalMoney); // Store total money only
+  totalMoneyElement.textContent = totalMoney; 
+}
+
+
+// Restart game
+document.getElementById('restart-button').addEventListener('click', () => {
+  restartMenu.style.display = 'none';
+  startScreen.style.display = 'block'; 
+  resetGameVariables(); 
+  totalMoneyElement.textContent = totalMoney; 
+  highestLevelElement.textContent = highestLevel; 
+});
+
+// Reset shop buttons
+function resetShopButtons() {
+  document.querySelectorAll('.luxury-theme').forEach(button => {
+    button.disabled = true; 
+  });
+  upgradeButton.disabled = true; 
+  timeBoostButton.disabled = true; 
+  autoInvestorButton.disabled = true; 
+}
+
+// Display notification
+function showNotification(message) {
+  const notification = document.createElement('div');
+  notification.textContent = message;
+  notification.style.position = 'fixed';
+  notification.style.top = '20px';
+  notification.style.left = '50%';
+  notification.style.transform = 'translateX(-50%)';
+  notification.style.background = 'rgba(0, 0, 0, 0.7)';
+  notification.style.color = '#fff';
+  notification.style.padding = '10px';
+  notification.style.borderRadius = '5px';
+  document.body.appendChild(notification);
+  
+  setTimeout(() => {
+    document.body.removeChild(notification);
+  }, 3000);
+}
+
+
+// Toggle sound functionality
+document.getElementById('toggle-sound').addEventListener('click', () => {
+  soundMuted = !soundMuted;
+  if (soundMuted) {
+    backgroundSound.volume = 0.0; // Stop background sound
+    document.getElementById('toggle-sound').textContent = 'Play Sound'; // Change button text
+  } else {
+    backgroundSound.volume = 1.0; // Play background sound
+    document.getElementById('toggle-sound').textContent = 'Mute Sound'; // Change button text
+  }
+});
+
+// Play sounds
+function playClickSound() {
+  if (!soundMuted) {
+    clickSound.currentTime = 0; 
+    clickSound.play();
+  }
+}
+
+function playPowerUpSound() {
+  if (!soundMuted) {
+    powerUpSound.currentTime = 0; 
+    powerUpSound.play();
+  }
+}
+
+// AI Error Handling Function
+function aiErrorHandler(action) {
+    switch (action) {
+        case 'startGuessNumberGame':
+            if (totalMoney <= 0) {
+                alert("You cannot play the Guess the Number game with zero money!");
+                return false; // Prevent game start
+            }
+            break;
+        case 'submitBid':
+            const bidAmount = parseFloat(document.getElementById('bid-amount').value);
+            if (isNaN(bidAmount) || bidAmount <= 0 || bidAmount > currentTotalMoney) {
+                alert("Please enter a valid bid amount!");
+                return false; // Prevent bid submission
+            }
+            break;
+        case 'endGame':
+            return confirm("Are you sure you want to end the game?"); // Confirmation for ending the game
+        default:
+            console.warn("Unknown action:", action);
+            return false; // Unknown action
+    }
+    return true; // Action allowed
+}
+
+// Example usage in existing functions
+document.getElementById('guess-game-button').addEventListener('click', () => {
+    if (aiErrorHandler('startGuessNumberGame')) {
+        startGuessNumberGame(); // Call the function to start the game if no errors
+    }
+});
+
+document.getElementById('submit-bid').addEventListener('click', () => {
+    if (aiErrorHandler('submitBid')) {
+        // Proceed with bid submission
+    }
+});
+
+document.getElementById('end-game-button').addEventListener('click', () => {
+    if (aiErrorHandler('endGame')) {
+        timer = 0; // Set timer to 0
+        endGame(); // Trigger the end game sequence
+    }
+});
+
+</script>
+
+<script type="module">
+// Firebase Setup
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+import { getDatabase, ref, set, push, onValue, remove, get, update } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyB-9uYvVQ6GfPTQK-2aHu27QwcuCwSxacM",
+    authDomain: "auction-db7e5.firebaseapp.com",
+    databaseURL: "https://auction-db7e5-default-rtdb.firebaseio.com",
+    projectId: "auction-db7e5",
+    storageBucket: "auction-db7e5.appspot.com",
+    messagingSenderId: "996699605695",
+    appId: "1:996699605695:web:4a78873aeba59f45ca140a"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const auth = getAuth();
+const rowsRef = ref(db, "rows");
+
+// Game Variables
+let playerName = "Anonymous";
+let playerMoney = 0;
+let userId = "";
+
+// Sign In Anonymously
+signInAnonymously(auth)
+    .then(() => console.log("Signed in anonymously."))
+    .catch(console.error);
+
+// On Auth State Change
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        userId = user.uid;
+        document.getElementById("playerId").innerText = userId.slice(0, 6);
+        document.getElementById("shop-total-money").innerText = playerMoney;
+        loadAuctionItems();
+        aiManager();
+        aiPlayers();
+    }
+});
+
+// Set Player Name
+window.setName = function () {
+    const nameInput = document.getElementById("playerName").value.trim();
+    if (nameInput) {
+        playerName = nameInput;
+        alert(`Welcome, ${playerName}!`);
+    } else {
+        alert("Please enter your name!");
+    }
+};
+
+// Load Auction Items
+function loadAuctionItems() {
+    onValue(rowsRef, (snapshot) => {
+        const data = snapshot.val();
+        const container = document.getElementById("auctionContainer");
+        container.innerHTML = "";
+
+        if (data) {
+            Object.keys(data).forEach(rowId => {
+                const row = data[rowId];
+                const rowDiv = document.createElement("div");
+                rowDiv.innerHTML = `<h3>${row.rowName}</h3>`;
+                const tileContainer = document.createElement("div");
+                tileContainer.className = "tile-container";
+
+                const tiles = row.tiles || {};
+                Object.keys(tiles).forEach(tileId => {
+                    const tile = tiles[tileId];
+                    const tileDiv = document.createElement("div");
+                    tileDiv.className = "auction-tile";
+                    tileDiv.innerHTML = `
+                        <h2>${tile.itemName}</h2>
+                        <p><h4><strong>Owner:</strong></h4><h3> ${tile.owner || "None"}</h3></p>
+                        <p class ="imp"><h4><strong>Highest Bid:</strong></h4><h3> $${tile.highestBid || 0}</h3></p>
+                        <input type="number" class="bac" id="bid_${tileId}" placeholder="Enter bid">
+                        <button onclick="placeBid('${rowId}', '${tileId}')">Bid</button>
+                    `;
+                    tileContainer.appendChild(tileDiv);
+                });
+
+                rowDiv.appendChild(tileContainer);
+                container.appendChild(rowDiv);
+            });
+        }
+    });
+}
+
+// Place Bid Function
+window.placeBid = async function (rowId, tileId) {
+    const input = document.getElementById(`bid_${tileId}`);
+    const bid = parseFloat(input.value);
+
+    if (!bid || bid <= 0) return alert("Enter a valid bid!");
+    if (bid > playerMoney) return alert("Not enough money!");
+
+    const tileRef = ref(db, `rows/${rowId}/tiles/${tileId}`);
+    const snap = await get(tileRef);
+    const tile = snap.val();
+
+    if (!tile || bid <= tile.highestBid) return alert("Bid is too low!");
+
+    playerMoney -= BigInt(bid);
+    document.getElementById("shop-total-money").innerText = playerMoney;
+
+    update(tileRef, {
+        highestBid: bid,
+        owner: playerName
+    });
+};
+
+// === Local auction === //
+
+// === Constants & Sample Data ===
+const samplePrefixes = ["Glow", "Zeta", "Giga", "Nova", "Lux", "Omega"];
+const sampleSuffixes = ["Coin", "Stone", "Shard", "Core", "Crystal", "Disc"];
+const basePrices = {
+  common: 120,
+  uncommon: 400,
+  rare: 2000,
+  epic: 12000,
+  legendary: 100000,
+  mythic: 1000000
+};
+const rarityLevels = ["common", "uncommon", "rare", "epic", "legendary", "mythic"];
+
+const firstNames = ["Luna", "Kai", "Aria", "Theo", "Nova", "Milo", "Skye", "Leo", "Zara", "Ezra"];
+const lastNames = ["Blaze", "Knight", "Storm", "Rayne", "Skye", "Shade", "Ash", "Wraith", "Rune", "Drake"];
+let usedAINames = [];
+
+function generateUniqueAIName() {
+  let name;
+  do {
+    const first = firstNames[Math.floor(Math.random() * firstNames.length)];
+    const last = lastNames[Math.floor(Math.random() * lastNames.length)];
+    name = `${first} ${last}`;
+  } while (usedAINames.includes(name));
+  usedAINames.push(name);
+  return name;
+}
+
+function clearOldAuctionData() {
+  localStorage.removeItem("1234567890");
+}
+
+function loadAuctionData() {
+  let data = JSON.parse(localStorage.getItem("1234567890")) || {};
+  rarityLevels.forEach(r => {
+    if (!data[r]) data[r] = { rowName: `${r.toUpperCase()} Row`, tiles: {} };
+  });
+  return data;
+}
+
+function saveAuctionData(data) {
+  localStorage.setItem("1234567890", JSON.stringify(data));
+  renderAuctions();
+}
+
+function renderAuctions() {
+  const container = document.getElementById("auctionRows");
+  if (!container) return;
+  container.innerHTML = "";
+  const data = loadAuctionData();
+
+  Object.entries(data).forEach(([rowId, row]) => {
+    const rowDiv = document.createElement("div");
+    rowDiv.innerHTML = `<h3>${row.rowName}</h3>`;
+    const tileContainer = document.createElement("div");
+    tileContainer.className = "tile-container";
+
+    Object.entries(row.tiles).forEach(([tileId, tile]) => {
+      const tileDiv = document.createElement("div");
+      tileDiv.className = "auction-tile";
+      tileDiv.innerHTML = `
+        <h2>${tile.itemName || "Unnamed"}</h2>
+        <p><strong>Rarity:</strong> ${tile.rarity || "Unknown"}</p>
+        <p><h4><strong>Owner:</strong></h4><h3> ${tile.owner || "None"}</h3></p>
+        <p class="imp"><h4><strong>Highest Bid:</strong></h4><h3> $${tile.highestBid || 0}</h3></p>
+        <input type="number" id="bid_${tileId}" class="bid-input" placeholder="Enter your bid" />
+        <button onclick="placeBid('${rowId}', '${tileId}')">Bid</button>
+      `;
+      tileContainer.appendChild(tileDiv);
+    });
+
+    rowDiv.appendChild(tileContainer);
+    container.appendChild(rowDiv);
+  });
+}
+
+function ensureInitialItems() {
+  const data = loadAuctionData();
+  let totalItems = 0;
+  rarityLevels.forEach(r => {
+    totalItems += Object.keys(data[r].tiles).length;
+  });
+  if (totalItems >= 10) return;
+
+  for (let i = 0; i < 10; i++) {
+    const rarity = rarityLevels[Math.floor(Math.random() * rarityLevels.length)];
+    const prefix = samplePrefixes[Math.floor(Math.random() * samplePrefixes.length)];
+    const suffix = sampleSuffixes[Math.floor(Math.random() * sampleSuffixes.length)];
+    const itemName = `${prefix} ${suffix}`;
+    const price = basePrices[rarity] + Math.floor(Math.random() * 1000);
+    const id = `${Date.now()}_${Math.floor(Math.random() * 100000)}`;
+    data[rarity].tiles[id] = {
+      itemName,
+      rarity,
+      highestBid: price,
+      owner: "None"
+    };
+  }
+  saveAuctionData(data);
+}
+
+window.placeBid = function (rowId, tileId) {
+  const input = document.getElementById(`bid_${tileId}`);
+  const bid = parseFloat(input?.value);
+  if (!bid || bid <= 0) return alert("Enter a valid bid!");
+
+  const data = loadAuctionData();
+  const row = data[rowId];
+  if (!row) return alert("Invalid row!");
+
+  const tile = row.tiles[tileId];
+  if (!tile || bid <= tile.highestBid) return alert("Bid is too low!");
+
+  const moneyElement = document.getElementById("shop-total-money");
+  let totalMoney = parseFloat(localStorage.getItem("totalMoney")) || 0;
+  if (bid > totalMoney) return alert("Not enough money!");
+
+  totalMoney -= bid;
+  tile.highestBid = bid;
+  tile.owner = "You";
+  localStorage.setItem("totalMoney", totalMoney);
+  moneyElement.innerText = `$${totalMoney.toLocaleString()}`;
+  saveAuctionData(data);
+};
+
+// Ensure items exist and display them
+ensureInitialItems();
+renderAuctions();
+
+        
+// === Guess the Number Game Logic with Daily Limit & Reward Ad === //
+
+let currentTotalMoney = totalMoney;
+let randomNumber;
+let minNumber, maxNumber;
+let termsAgreed = false;
+let isGuessNumberGameEnabled = true;
+
+// Daily limit tracking
+let guessGameAttempts = 0;
+const maxGuessGameAttempts = 3;
+let extraGuessAvailable = false;
+
+// ==== Daily Attempt Functions ====
+
+function checkGuessGameReset() {
+    const lastPlayed = localStorage.getItem("lastGuessPlay") || 0;
+    const now = Date.now();
+
+    if (now - parseInt(lastPlayed) > 86400000) {
+        guessGameAttempts = 0;
+        localStorage.setItem("guessGameAttempts", 0);
+        localStorage.setItem("lastGuessPlay", now);
+    } else {
+        guessGameAttempts = parseInt(localStorage.getItem("guessGameAttempts")) || 0;
+    }
+}
+
+function recordGuessGamePlay() {
+    guessGameAttempts++;
+    localStorage.setItem("guessGameAttempts", guessGameAttempts);
+    localStorage.setItem("lastGuessPlay", Date.now());
+    updateGuessChances();
+}
+
+function updateGuessChances() {
+    const chancesLeft = Math.max(0, maxGuessGameAttempts - guessGameAttempts);
+    document.getElementById("guess-chances").innerText = `Chances Left: ${chancesLeft}`;
+}
+
+// ==== Event Listeners ====
+
+document.getElementById('guess-game-button').addEventListener('click', () => {
+    checkGuessGameReset();
+    updateGuessChances();
+
+    if (!termsAgreed) {
+        const agree = confirm("Do you agree to the terms and conditions of this game?");
+        if (agree) {
+            termsAgreed = true;
+            attemptGuessGameStart();
+        }
+    } else {
+        attemptGuessGameStart();
+    }
+});
+
+function attemptGuessGameStart() {
+    if (totalMoney <= 0 || (!extraGuessAvailable && guessGameAttempts >= maxGuessGameAttempts)) {
+        alert("🚫 No guesses left for today! You can watch an ad for 1 extra guess.");
+        document.getElementById("rewarded-video-ad-guess").style.display = "block";
+        return;
+    }
+    startGuessNumberGame();
+}
+
+// Start the game
+function startGuessNumberGame() {
+    currentTotalMoney = totalMoney;
+    document.getElementById('current-total-money').textContent = currentTotalMoney;
+
+    hideGameElements();
+    document.getElementById('guess-number-game').style.display = 'block';
+
+    setGuessRange();
+}
+
+// Guessing range logic
+function setGuessRange() {
+    const difficultyFactor = Math.random() * (0.2) + 0.5;
+    const maxGuessValue = 10;
+    minNumber = Math.ceil(maxGuessValue * difficultyFactor);
+    maxNumber = maxGuessValue;
+    randomNumber = Math.floor(Math.random() * (maxNumber - minNumber + 1)) + minNumber;
+
+    document.getElementById('guess-range').textContent = `Guess a number between ${minNumber} and ${maxNumber}`;
+    document.getElementById('guess-range-notification').innerHTML = `<p id="guess-result">You can guess a number between <strong>${minNumber}</strong> and <strong>${maxNumber}</strong>.</p>`;
+    document.getElementById('guess-result').style.display = 'block';
+}
+
+// Place Bid
+document.getElementById('submit-bid').addEventListener('click', () => {
+    const bidAmountInput = document.getElementById('bid-amount');
+    const bidAmount = parseFloat(bidAmountInput.value);
+
+    if (isNaN(bidAmount) || bidAmount <= 0 || bidAmount > currentTotalMoney) {
+        alert("❗ Enter a valid bid amount!");
+        return;
+    }
+
+    if (confirm(`Confirm bid of ${bidAmount} 🪙?`)) {
+        currentTotalMoney -= bidAmount;
+        document.getElementById('current-total-money').textContent = currentTotalMoney;
+
+        document.getElementById('guess-number').disabled = false;
+        document.getElementById('submit-guess').disabled = false;
+
+        setGuessRange();
+
+        if (!extraGuessAvailable) {
+            recordGuessGamePlay();
+        } else {
+            extraGuessAvailable = false;
+        }
+    }
+});
+
+// Guess Submission
+document.getElementById('submit-guess').addEventListener('click', () => {
+    const guessNumber = parseInt(document.getElementById('guess-number').value);
+    const bidAmount = parseFloat(document.getElementById('bid-amount').value);
+
+    if (isNaN(guessNumber) || guessNumber < minNumber || guessNumber > maxNumber) {
+        alert(`❗ Please guess a number between ${minNumber} and ${maxNumber}!`);
+        return;
+    }
+
+    if (confirm(`Submit guess ${guessNumber}?`)) {
+        if (guessNumber === randomNumber) {
+            alert("🎉 Correct guess!");
+            currentTotalMoney += bidAmount * 2;
+        } else {
+            alert(`😢 Wrong! Correct number was ${randomNumber}.`);
+        }
+
+        totalMoney = currentTotalMoney;
+        localStorage.setItem('totalMoney', totalMoney);
+        document.getElementById('current-total-money').textContent = totalMoney;
+
+        document.getElementById('guess-number').disabled = true;
+        document.getElementById('submit-guess').disabled = true;
+
+        resetGuessGame();
+    }
+});
+
+// Reset Game State
+function resetGuessGame() {
+    document.getElementById('bid-amount').value = '';
+    document.getElementById('guess-number').value = '';
+    document.getElementById('guess-number').disabled = true;
+    document.getElementById('submit-guess').disabled = true;
+    document.getElementById('guess-range-notification').innerHTML = '';
+}
+
+// Back to Home
+document.getElementById('back-to-home').addEventListener('click', () => {
+    hideGameElements();
+    document.getElementById('start-screen').style.display = 'block';
+    document.getElementById('guess-number-game').style.display = 'none';
+    document.getElementById('game-screen').style.display = 'none';
+    document.getElementById('jack').style.display = 'none';
+    resetGuessGame();
+});
+
+// 🎥 Watch Ad for Extra Guess
+document.getElementById("watch-ad-guess").addEventListener("click", () => {
+    alert("🎬 Thanks for watching the ad! You've unlocked 1 extra guess.");
+    extraGuessAvailable = true;
+    showAdScreen();
+    document.getElementById("rewarded-video-ad-guess").style.display = "none";
+
+    startGuessNumberGame();
+});
+
+// Call on game/page load
+checkGuessGameReset();
+updateGuessChances();
+
+    
+</script>
+
+<!-- Ad SDK Integration -->
+<script>
+(async function() {
+    let dailyAdLimits = {
+        rewarded: 3,
+        watched: 0
+    };
+
+    function requestAd(type, callback) {
+        if (type === "rewarded" && dailyAdLimits.watched >= dailyAdLimits.rewarded) {
+            alert("You have reached the daily limit for watching ads!");
+            return;
+        }
+        window.CrazyGames.SDK.ad.requestAd(type, {
+            adStarted: () => console.log(`${type} Ad Started`),
+            adFinished: () => {
+                console.log(`${type} Ad Finished`);
+                if (callback) callback();
+                if (type === "rewarded") dailyAdLimits.watched++;
+            },
+            adError: (error) => console.log(`${type} Ad Error:`, error)
+        });
+    }
+
+    document.getElementById("watch-ad").addEventListener("click", () => requestAd("rewarded", () => alert("Earnings Doubled!")));
+    document.getElementById("watch-ad-guess").addEventListener("click", () => requestAd("rewarded", () => alert("Extra Attempt Granted!")));
+    document.getElementById("watch-ad-money").addEventListener("click", () => requestAd("rewarded", () => alert("Money Boosted!")));
+})();
+
+
+// smart ai storage manager....
+
+
+(async function () {
+    const useCrazyGames = typeof CrazyGames !== "undefined" && CrazyGames.SDK.storage;
+    const dbName = "GameBackupDB";
+    const storeName = "BackupStore";
+
+    // IndexedDB Backup System
+    function openDB() {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open(dbName, 1);
+            request.onupgradeneeded = (event) => {
+                let db = event.target.result;
+                if (!db.objectStoreNames.contains(storeName)) {
+                    db.createObjectStore(storeName, { keyPath: "key" });
+                }
+            };
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject("IndexedDB Error");
+        });
+    }
+
+    async function setBackup(key, value) {
+        let db = await openDB();
+        let tx = db.transaction(storeName, "readwrite");
+        let store = tx.objectStore(storeName);
+        store.put({ key, value });
+    }
+
+    async function getBackup(key) {
+        let db = await openDB();
+        return new Promise((resolve) => {
+            let tx = db.transaction(storeName, "readonly");
+            let store = tx.objectStore(storeName);
+            let request = store.get(key);
+            request.onsuccess = () => resolve(request.result ? request.result.value : null);
+            request.onerror = () => resolve(null);
+        });
+    }
+
+    async function removeBackup(key) {
+        let db = await openDB();
+        let tx = db.transaction(storeName, "readwrite");
+        let store = tx.objectStore(storeName);
+        store.delete(key);
+    }
+
+    // Smart AI Storage Proxy
+    const smartStorage = new Proxy(localStorage, {
+        get(target, prop) {
+            if (prop === "setItem") {
+                return async (key, value) => {
+                    try {
+                        // Save to CrazyGames storage if available
+                        if (useCrazyGames) await CrazyGames.SDK.storage.set(key, value);
+                        else target.setItem(key, value);
+
+                        // Save backup
+                        await setBackup(key, value);
+                    } catch (error) {
+                        console.warn("Storage Error:", error);
+                    }
+                };
+            }
+            if (prop === "getItem") {
+                return async (key) => {
+                    try {
+                        // Try CrazyGames storage first
+                        if (useCrazyGames) {
+                            let value = await CrazyGames.SDK.storage.get(key);
+                            if (value !== null) return value;
+                        }
+                        // Try localStorage
+                        let value = target.getItem(key);
+                        if (value !== null) return value;
+
+                        // Last resort: Get from IndexedDB backup
+                        return await getBackup(key);
+                    } catch (error) {
+                        console.warn("Data Recovery Failed:", error);
+                        return null;
+                    }
+                };
+            }
+            if (prop === "removeItem") {
+                return async (key) => {
+                    try {
+                        if (useCrazyGames) await CrazyGames.SDK.storage.remove(key);
+                        else target.removeItem(key);
+
+                        await removeBackup(key);
+                    } catch (error) {
+                        console.warn("Failed to Remove Data:", error);
+                    }
+                };
+            }
+            return target[prop];
+        }
+    });
+
+    // Global Override
+    window.localStorage = smartStorage;
+
+    console.log("🚀 Smart AI Storage Manager Initialized!");
+})();
+
+document.addEventListener("click", (e) => {
+    if (e.target.tagName === "BUTTON") {
+        try {
+            aiButtonHandler(e.target);
+        } catch (err) {
+            aiRecover("Button click failed", e.target);
+        }
+    }
+});
+
+const aiMemory = {
+    fallbackValues: {
+        playerId: "guest-" + Math.random().toString(36).substr(2, 5),
+        playerName: "Guest",
+        totalMoney: 1000
+    }
+};
+
+function aiButtonHandler(button) {
+    const action = button.getAttribute("data-action");
+    if (!action) return;
+
+    switch (action) {
+        case "placeBid":
+            let row = button.getAttribute("data-row");
+            let tile = button.getAttribute("data-tile");
+            window.placeBid(row, tile);
+            break;
+        case "setName":
+            let nameInput = document.getElementById("playerNameInput");
+            aiSetPlayerName(nameInput.value);
+            break;
+        default:
+            console.warn("🧠 Unknown button action:", action);
+    }
+}
+
+function aiRecover(reason, context) {
+    console.warn("🛠️ AI Recovery Triggered:", reason);
+    if (!document.getElementById("auctionContainer")) {
+        let container = document.createElement("div");
+        container.id = "auctionContainer";
+        container.innerHTML = "<p>⚠️ Recovered auction area</p>";
+        document.body.appendChild(container);
+    }
+
+    if (!document.getElementById("shop-total-money")) {
+        let moneyDisplay = document.createElement("div");
+        moneyDisplay.id = "shop-total-money";
+        moneyDisplay.innerText = `$${aiMemory.fallbackValues.totalMoney}`;
+        document.body.appendChild(moneyDisplay);
+    }
+
+    if (context && context.outerHTML) {
+        console.warn("💡 Attempting context self-repair...");
+        context.innerHTML = "Recovered!";
+    }
+}
+
+(async function ensurePlayerData() {
+    try {
+        const get = (key) => localStorage.getItem(key) || aiMemory.fallbackValues[key];
+
+        const playerId = get("playerId");
+        const playerName = get("playerName");
+        const totalMoney = parseFloat(localStorage.getItem("totalMoney")) || aiMemory.fallbackValues.totalMoney;
+
+        await localStorage.setItem("playerId", playerId);
+        await localStorage.setItem("playerName", playerName);
+        await localStorage.setItem("totalMoney", totalMoney);
+
+        aiMemory.fallbackValues.playerId = playerId;
+        aiMemory.fallbackValues.playerName = playerName;
+        aiMemory.fallbackValues.totalMoney = totalMoney;
+
+        console.log("🎮 Player Info Synced:", { playerId, playerName, totalMoney });
+    } catch (error) {
+        aiRecover("Player Data Load Failed", null);
+    }
+})();
+</script>
+<script>
+let adCountdownInterval;
+
+function showAdScreen() {
+    // Pause all game sounds
+    document.getElementById('background-sound')?.pause();
+    document.getElementById('click-sound')?.pause();
+    document.getElementById('power-up-sound')?.pause();
+
+    // Show ad screen
+    document.getElementById('interstitial-ad-screen').style.display = 'block';
+    document.getElementById('close-ad-button').style.display = 'none';
+
+    // Start 5-second countdown
+    let timeLeft = 0;
+    document.getElementById('ad-timer').innerText = timeLeft;
+    adCountdownInterval = setInterval(() => {
+        timeLeft--;
+        document.getElementById('ad-timer').innerText = timeLeft;
+        if (timeLeft <= 0) {
+            clearInterval(adCountdownInterval);
+            document.getElementById('close-ad-button').style.display = 'inline-block';
+        }
+    }, 1000);
+}
+
+function closeAdScreen() {
+    clearInterval(adCountdownInterval);
+
+    // Hide ad screen
+    document.getElementById('interstitial-ad-screen').style.display = 'none';
+
+    // Resume all game sounds
+    const bgSound = document.getElementById('background-sound');
+    if (bgSound && bgSound.paused) bgSound.play();
+
+    // You can also resume other sounds if needed:
+    // document.getElementById('click-sound')?.play();
+    // document.getElementById('power-up-sound')?.play();
+}
+
+// Hook up the close button
+document.getElementById('close-ad-button').addEventListener('click', closeAdScreen);
+
+</script>
+
+<script>
+    const symbols = ['🍒', '🍋', '🍊', '🔔', '💎', '7️⃣'];
+    const reels = [
+      document.getElementById('reel1'),
+      document.getElementById('reel2'),
+      document.getElementById('reel3')
+    ];
+    const message = document.getElementById('message');
+    const balanceEl = document.getElementById('balance');
+    const coinSound = document.getElementById('coinSound');
+    const spinSound = document.getElementById('spinSound');
+    const streakTitle = document.getElementById('streakTitle');
+    const sadAnimation = document.getElementById('sadAnimation');
+    let streak = 0;
+
+    // Initialize balance from localStorage
+    let balance = localStorage.getItem('totalMoney') ? parseInt(localStorage.getItem('totalMoney')) : 100;
+    balanceEl.textContent = balance;
+
+    function startSpin() {
+      let bet = parseInt(document.getElementById('bet').value);
+      if (isNaN(bet) || bet <= 0 || bet > balance) {
+        message.textContent = "Invalid bet!";
+        return;
+      }
+      balance -= bet;
+      localStorage.setItem('totalMoney', balance); // Update localStorage
+      balanceEl.textContent = balance;
+      message.textContent = "Spinning...";
+      spinSound.play();
+
+      let results = [];
+      let intervals = [];
+
+      for (let i = 0; i < reels.length; i++) {
+        let reel = reels[i];
+        let spins = 30 + i * 10;
+        let count = 0;
+        intervals[i] = setInterval(() => {
+          reel.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+          count++;
+          if (count >= spins) {
+            clearInterval(intervals[i]);
+            results[i] = reel.textContent;
+            if (i === 2) checkWin(results, bet);
+            reel.style.transform = 'scale(1.1)';
+            setTimeout(() => reel.style.transform = 'scale(1)', 300);
+          }
+        }, 100 + i * 20);
+      }
+    }
+
+    function checkWin(results, bet) {
+      let profit = 0;
+      let winMessage = "";
+
+      const matchCount = results.filter(symbol => symbol === results[0]).length;
+
+      if (matchCount === 3) {
+        if (results[0] === '7️⃣') {
+          profit = bet * 10; // Jackpot for 777
+          winMessage = `🎉 JACKPOT! +${profit} 🪙`;
+        } else {
+          profit = bet * 3; // Other three of a kind
+          winMessage = `🎊 Win! +${profit} 🪙`;
+        }
+        streak++;
+      } else if (matchCount === 2) {
+        profit = bet * 2; // Two common symbols
+        winMessage = `✨ Small win! +${profit} 🪙`;
+        streak++;
+      } else {
+        profit = -bet; // Full loss
+        winMessage = `😢 Better luck next time! -${-profit} 🪙`;
+        streak = 0; // Reset streak on loss
+        sadAnimation.style.display = "block"; // Show sad animation on loss
+        setTimeout(() => sadAnimation.style.display = "none", 3000); // Hide after 3 seconds
+        updateStreakTitle();
+        showResult(winMessage);
+        return; // Skip coin rain on loss
+      }
+
+      // Update balance
+      balance += profit;
+      localStorage.setItem('totalMoney', balance); // Update localStorage
+      balanceEl.textContent = balance;
+      showResult(winMessage);
+
+      // Show coin rain for wins
+      if (profit > 0) {
+        coinRain(profit);
+        coinSound.play();
+      }
+
+      // Update streak title
+      updateStreakTitle();
+    }
+
+    function updateStreakTitle() {
+      if (streak > 0) {
+        streakTitle.textContent = `Streak: ${streak} Wins! Keep it going!`;
+        streakTitle.style.display = "block";
+      } else {
+        streakTitle.style.display = "none";
+      }
+    }
+
+    function showResult(message) {
+      setTimeout(() => {
+        document.getElementById('message').textContent = message;
+      }, 500); // Delay for better user experience
+    }
+
+    function coinRain(profit) {
+      const numCoins = profit > 0 ? profit / 2 : 0; // More coins for higher profit
+      for (let i = 0; i < numCoins; i++) {
+        const coin = document.createElement("div");
+        coin.className = "coin";
+        coin.textContent = "🪙";
+        const x = (Math.random() - 0.5) * 400 + "px";
+        const y = (Math.random() * 400 + 200) + "px";
+        coin.style.left = "50%";
+        coin.style.top = "100px";
+        coin.style.setProperty('--x', x);
+        coin.style.setProperty('--y', y);
+        document.body.appendChild(coin);
+        setTimeout(() => coin.remove(), 3000);
+      }
+    }
+
+
+   // Back to Home
+    document.getElementById('back1').addEventListener('click', () => {
+    hideGameElements();
+    document.getElementById('start-screen').style.display = 'block';
+    document.getElementById('guess-number-game').style.display = 'none';
+    document.getElementById('game-screen').style.display = 'none';
+    document.getElementById('jack').style.display = 'none';
+    resetGuessGame();
+});
+
+</script>
+
+</body>
+</html>
